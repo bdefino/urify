@@ -1,6 +1,6 @@
 # `urify` - generate a data URI
 Sometimes, you're forced to communicate over a text-only channel: like IRC,
-[`slack-term](https://github.com/erroneousboat/slack-term), or even plain old
+[`slack-term`](https://github.com/erroneousboat/slack-term), or even plain old
 SMS.
 For the occasional thrifty message, these mediums fulfill their purpose; but
 for the heavy user, they aren't enough.
