@@ -8,86 +8,86 @@ import sys
 __doc__ = """generate a data URI
 Usage: %s [OPTIONS] [FILE]
 FILE
-	the file to convert
-	(defaults to `-`, for STDIN)
+    the file to convert
+    (defaults to `-`, for STDIN)
 OPTIONS
-	-h
-		print this text and exit
-	-m MIME-TYPE
-		set the MIME type
-		(by default, this is inferred first by the path,
-		then by the presence of any binary data)"""
+    -h
+        print this text and exit
+    -m MIME-TYPE
+        set the MIME type
+        (by default, this is inferred first by the path,
+        then by the presence of any binary data)"""
 
 def help(name):
-	print(__doc__ % name, file = sys.stderr)
+    print(__doc__ % name, file = sys.stderr)
 
 def main(argv):
-	content = None
-	ifile = '-'
-	mtype = None
-	opts, args = getopt.getopt(argv[1:], "hm:+")
+    content = None
+    ifile = '-'
+    mtype = None
+    opts, args = getopt.getopt(argv[1:], "hm:+")
 
-	if len(args) > 1:
-		print("Too many arguments.", file = sys.stderr)
-		help(argv[0])
-		return 1
-	
-	if args:
-		ifile = args[0]
+    if len(args) > 1:
+        print("Too many arguments.", file = sys.stderr)
+        help(argv[0])
+        return 1
 
-	for k, v in opts:
-		if k == "-h":
-			help(argv[0])
-			return 0
-		elif k == "-m":
-			mtype = v
-		else:
-			print("Unexpected argument.", file = sys.stderr)
-			help(argv[0])
-			return 1
+    if args:
+        ifile = args[0]
 
-	if not ifile:
-		print("Empty input path.", file = sys.stderr)
-		help(argv[0])
-		return 1
-	
-	if ifile == '-':
-		with os.fdopen(sys.stdin.fileno(), "rb") as fp:
-			content = fp.read()
-	else:
-		try:
-			with open(ifile, "rb") as fp:
-				content = fp.read()
-		except OSError as e:
-			print(e, file = sys.stderr)
-			return 1
+    for k, v in opts:
+        if k == "-h":
+            help(argv[0])
+            return 0
+        elif k == "-m":
+            mtype = v
+        else:
+            print("Unexpected argument.", file = sys.stderr)
+            help(argv[0])
+            return 1
 
-	# need the MIME type
+    if not ifile:
+        print("Empty input path.", file = sys.stderr)
+        help(argv[0])
+        return 1
 
-	if mtype is None:
-		if not ifile == '-':
-			mtype = mimetypes.guess_type(ifile)[0]
+    if ifile == '-':
+        with os.fdopen(sys.stdin.fileno(), "rb") as fp:
+            content = fp.read()
+    else:
+        try:
+            with open(ifile, "rb") as fp:
+                content = fp.read()
+        except OSError as e:
+            print(e, file = sys.stderr)
+            return 1
 
-		if mtype is None:
-			try:
-				if content.decode().isprintable():
-					mtype = "text/plain"
-				raise UnicodeError()
-			except UnicodeError:
-				mtype = "application/octet-stream"
+    # need the MIME type
 
-	# convert
+    if mtype is None:
+        if not ifile == '-':
+            mtype = mimetypes.guess_type(ifile)[0]
 
-	try:
-		print("data:%s;base64,%s"
-			% (mtype, base64.b64encode(content).decode()))
-	except BrokenPipeError:
-		pass
-	except UnicodeError as e:
-		print(e, file = sys.stderr)
-		return 1
-	return 0
+        if mtype is None:
+            try:
+                if content.decode().isprintable():
+                    mtype = "text/plain"
+                raise UnicodeError()
+            except UnicodeError:
+                mtype = "application/octet-stream"
+
+    # convert
+
+    try:
+        print("data:%s;base64,%s"
+            % (mtype, base64.b64encode(content).decode()))
+    except BrokenPipeError:
+        pass
+    except UnicodeError as e:
+        print(e, file = sys.stderr)
+        return 1
+    return 0
 
 if __name__ == "__main__":
-	sys.exit(main(sys.argv))
+    sys.exit(main(sys.argv))
 
